@@ -24,7 +24,7 @@ app.use('/', require('./server/routes/customer'))
 app.get('*', (req, res) => {
     res.render('404')
 })
-
+ 
 
 app.listen(PORT, (req, res) => {
   console.log(`App listening on ${PORT}`);
