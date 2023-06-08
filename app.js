@@ -1,31 +1,53 @@
-require("dotenv").config();
-const express = require("express");
+require('dotenv').config();
+
+const express = require('express');
+const expressLayout = require('express-ejs-layouts');
+const methodOverride = require('method-override');
+const flash = require('connect-flash');
+const session = require('express-session');
+const connectDB = require('./server/config/db');
+
 const app = express();
-const PORT = 5000 || process.env.PORT;
-const expressLayouts = require("express-ejs-layouts");
-const connectDb = require('./server/config/db')
+const port = 5000 || process.env.PORT;
+
+// Connect to Database  
+connectDB();
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
-connectDb(); 
+app.use(methodOverride('_method'));
 
 // Static Files
 app.use(express.static('public'));
 
-// Template Engine
-app.use(expressLayouts);
-app.set("layout", "./layouts/main");
-app.set("view engine", "ejs");
+// Express Session
+app.use(
+  session({
+    secret: 'secret',
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
+    }
+  })
+);
 
-//Routes
+// Flash Messages
+app.use(flash({ sessionKeyName: 'flashMessage' }));
+
+// Templating Engine
+app.use(expressLayout);
+app.set('layout', './layouts/main');
+app.set('view engine', 'ejs');
+
+// Routes
 app.use('/', require('./server/routes/customer'))
 
+// Handle 404
 app.get('*', (req, res) => {
-    res.render('404')
-})
- 
+  res.status(404).render('404');
+});
 
-app.listen(PORT, (req, res) => {
-  console.log(`App listening on ${PORT}`);
+app.listen(port, ()=> {
+  console.log(`App listeing on port ${port}`)
 });
